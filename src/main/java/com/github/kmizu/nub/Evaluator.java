@@ -2,6 +2,9 @@ package com.github.kmizu.nub;
 
 import java.util.*;
 
+/**
+ * インタプリタに相当するっぽい
+ */
 public class Evaluator implements AstNode.ExpressionVisitor<Object> {
     public static class Environment {
         public final Map<String, Object> mapping = new HashMap<>();
@@ -64,8 +67,14 @@ public class Evaluator implements AstNode.ExpressionVisitor<Object> {
                 return asInt(node.lhs().accept(this)) - asInt(node.rhs().accept(this));
             case "*":
                 return asInt(node.lhs().accept(this)) * asInt(node.rhs().accept(this));
+            case "**":
+                int lresult = asInt(node.lhs().accept(this));
+                int rresult = asInt(node.rhs().accept(this));
+                return (int)Math.pow(lresult, rresult);
             case "/":
                 return asInt(node.lhs().accept(this)) / asInt(node.rhs().accept(this));
+            case "%":
+                return asInt(node.lhs().accept(this)) % asInt(node.rhs().accept(this));
             case "<=":
                 return asInt((node.lhs().accept(this))) <= asInt(node.rhs().accept(this)) ? 1 : 0;
             case ">=":
@@ -94,6 +103,16 @@ public class Evaluator implements AstNode.ExpressionVisitor<Object> {
     @Override
     public Integer visitNumber(AstNode.Number node) {
         return node.value();
+    }
+
+    @Override
+    public Object visitString(AstNode.StringLiteral stringLiteral) {
+        return stringLiteral.value();
+    }
+
+    @Override
+    public Object visitBoolean(AstNode.BooleanLiteral booleanLiteral) {
+        return booleanLiteral.value();
     }
 
     @Override

@@ -9,7 +9,7 @@ block returns [List<AstNode.Expression> e]
    ;
 
 toplevels[List<AstNode.Expression> es] returns [List<AstNode.Expression> e]
-   : (v=toplevel {$es.add($v.e);})+ {$e = $es;}
+   : (v=toplevel {$es.add($v.e);})+ { $e = $es; }
    ;
 
 toplevel returns [AstNode.Expression e]
@@ -71,7 +71,7 @@ assignment returns [AstNode.Expression e]
     : name=IDENTIFIER EQ x=expression {$e = new AstNode.AssignmentOperation($name.getText(), $x.e);}
     | v=logical {$e = $v.e;}
     ;
-    
+
 logical returns [AstNode.Expression e]
     : l=logical op='&&' r=conditional {$e = new AstNode.BinaryOperation($op.getText(), $l.e, $r.e);}
     | l=logical op='||' r=conditional {$e = new AstNode.BinaryOperation($op.getText(), $l.e, $r.e);}
@@ -96,6 +96,8 @@ additive returns [AstNode.Expression e]
 
 multitive returns [AstNode.Expression e]
     : l=multitive op='*' r=primary {$e = new AstNode.BinaryOperation($op.getText(), $l.e, $r.e);}
+    | l=multitive op='**' r=primary {$e = new AstNode.BinaryOperation($op.getText(), $l.e, $r.e);}
+    | l=multitive op='%' r=primary {$e = new AstNode.BinaryOperation($op.getText(), $l.e, $r.e);}
     | l=multitive op='/' r=primary {$e = new AstNode.BinaryOperation($op.getText(), $l.e, $r.e);}
     | v=primary {$e = $v.e;}
     ;
@@ -104,8 +106,10 @@ primary returns [AstNode.Expression e]
     @init {
       List<AstNode.Expression> params = new ArrayList<AstNode.Expression>();
     }
-    : v=identifier {$e = $v.e;} (LP ((p=expression {params.add($p.e);} (',' p=expression {params.add($p.e);})*)?) RP {$e = new AstNode.FunctionCall($v.e, params);})?
+    :
+    | v=identifier {$e = $v.e;} (LP ((p=expression {params.add($p.e);} (',' p=expression {params.add($p.e);})*)?) RP {$e = new AstNode.FunctionCall($v.e, params);})?
     | n=NUMBER {$e = new AstNode.Number(Integer.parseInt($n.getText()));}
+    | b=BOOLEAN {$e = new AstNode.BooleanLiteral($b.getText());}
     | s=STRING {$e = new AstNode.StringLiteral($s.getText());}
     | '(' x=expression ')' {$e = $x.e;}
     | ifExpression {$e = $ifExpression.e;}
@@ -148,6 +152,10 @@ WHILE : 'while'
 
 RETURN : 'return'
    ;
+
+BOOLEAN
+    : 'true' | 'false'
+    ;
 
 IDENTIFIER
    : IDENTIFIER_START IDENTIFIER_PART*

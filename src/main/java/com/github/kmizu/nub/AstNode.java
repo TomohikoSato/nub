@@ -19,6 +19,8 @@ public class AstNode {
         E visitDefFunction(DefFunction node);
         E visitFunctionCall(FunctionCall node);
         E visitReturn(Return node);
+        E visitString(StringLiteral stringLiteral);
+        E visitBoolean(BooleanLiteral booleanLiteral);
     }
 
     public static abstract class Expression extends AstNode {
@@ -119,9 +121,9 @@ public class AstNode {
         private final AstNode.Expression condition;
         private final List<AstNode.Expression> thenClause, elseClause;
         public IfExpression(
-            AstNode.Expression condition,
-            List<AstNode.Expression> thenClause,
-            List<AstNode.Expression> elseClause) {
+                AstNode.Expression condition,
+                List<AstNode.Expression> thenClause,
+                List<AstNode.Expression> elseClause) {
             this.condition = condition;
             this.thenClause = thenClause;
             this.elseClause = elseClause;
@@ -241,12 +243,27 @@ public class AstNode {
 
     public static class StringLiteral extends Expression {
         private final String value;
-        public StringLiteral(String value) { this.value = value; }
-        public String value() { return value.substring(1, value.length() - 1); }
+        public StringLiteral(String value) {
+            this.value = value;
+        }
+        public String value() { return value.substring(1, value.length() - 1); } //" " を除いているのか？
 
         @Override
         public <E> E accept(ExpressionVisitor<E> visitor) {
-            throw new NotImplementedException();
+            return visitor.visitString(this);
+        }
+    }
+
+    public static class BooleanLiteral extends Expression {
+        private final String value;
+        public BooleanLiteral(String value) {
+            this.value = value;
+        }
+        public Boolean value(){return Boolean.valueOf(value);}
+
+        @Override
+        public <E> E accept(ExpressionVisitor<E> visitor) {
+            return visitor.visitBoolean(this);
         }
     }
 
